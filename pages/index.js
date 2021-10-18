@@ -23,6 +23,11 @@ export default function Home() {
 
       <Heading as="h3" size="md" mt={6}>This is another example.</Heading>
 
+      <Text color="primary">primary</Text>
+      <Text color="primary2">primary2</Text>
+      <Text color="secondary">secondary</Text>
+      <Text color="secondary2">secondary2</Text>
+
       <ColorModeToggle/>
     </Container>
   );

@@ -1,26 +1,34 @@
 import React from 'react';
+import Head from 'next/head';
+import NextLink from 'next/link';
 
 import {
-  Container,
+  Box,
+  Flex,
   Heading,
-  Code,
+  Text,
   Link,
   Button,
 } from '@chakra-ui/react';
 
 export default function Custom404() {
   return (
-    <Container 
-      maxW="container.md" p={8} pt={16}
-      align="center"
-    >
-      <Heading as="h1" size="xl" my={2}>404: Not found</Heading>
-      <Heading as="h2" size="md" fontWeight="normal" my={2}>
-        Edit this page in <Code>/pages/404.js</Code>
-      </Heading>
-      <Link href="/" style={{ textDecoration: "none" }}>
-        <Button mt={8}>Go home</Button>
-      </Link>
-    </Container>
+    <>
+      <Head>
+        <title>404!</title>
+      </Head>
+
+      <Flex minH="90vh" align="center" justify="center">
+        <Box align="center">
+          <Heading as="h1" size="2xl">404!</Heading>
+          <Text fontSize="lg">Sorry, that page isn't here.</Text>
+          <NextLink href="/" passHref>
+            <Link style={{ textDecoration: "none" }}>
+              <Button mt={4}>🏠 Go Home</Button>
+            </Link>
+          </NextLink>
+        </Box>
+      </Flex>
+    </>
   );
 }
