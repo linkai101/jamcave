@@ -5,7 +5,7 @@ edition = "2018"
 
 [[bin]]
 name = "jamcave"
-path = "backend/main.rs"
+path = "server/main.rs"
 
 [dependencies]
 
