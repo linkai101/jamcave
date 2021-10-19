@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && next export",
-    "start": "next start"
+    "dev": "next dev ./client",
+    "build": "next build ./client && next export ./client",
+    "start": "next start ./client"
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.0.7",
