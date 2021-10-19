@@ -14,8 +14,14 @@ export default function SessionPage() {
   const canvasRef = React.useRef(null);
   const contextRef = React.useRef(null);
 
-  //const [mousePos, setMousePos] = React.useState({ x:0, y:0 });
   const [isDrawing, setIsDrawing] = React.useState(false);
+
+  const [elements, setElements] = React.useState([]);
+  const [currentPath, setCurrentPath] = React.useState([]);
+  const [currentTool, setCurrentTool] = React.useState('pen'); // pen, line, rect, circle, eraser
+  const [brushSize, setBrushSize] = React.useState(8);
+  const [color, setColor] = React.useState('black');
+  const [brushStyle, setBrushStyle] = React.useState('round');
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,30 +31,58 @@ export default function SessionPage() {
     canvas.style.height = "100%";
 
     const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.scale(2,2);
-    context.lineCap = 'round';
-    context.strokeStyle = 'black';
-    context.lineWidth = 5;
     contextRef.current = context;
-  }, []);
+
+    //const rc = rough.canvas(canvas);
+
+    elements.forEach(ele => {
+      contextRef.current.strokeStyle = ele.color;
+      contextRef.current.lineWidth = ele.brushSize;
+      contextRef.current.lineCap = ele.brushStyle;
+      switch (ele.tool) {
+        case "pen":
+            contextRef.current.beginPath();
+            ele.path.forEach((coord) => {
+              contextRef.current.lineTo(coord.x, coord.y);
+            });
+            contextRef.current.stroke();
+            contextRef.current.closePath();
+          break;
+      }
+    });
+
+    if (currentPath.length > 0) {
+      contextRef.current.strokeStyle = color;
+      contextRef.current.lineWidth = brushSize;
+      contextRef.current.lineCap = brushStyle;
+
+      contextRef.current.beginPath();
+      currentPath.forEach(point => {
+        contextRef.current.lineTo(point.x, point.y);
+        contextRef.current.stroke();
+      });
+      contextRef.current.closePath();
+    }
+  }, [elements, currentPath]);
 
   const startDrawing = ({ nativeEvent }) => {
     const { offsetX, offsetY } = nativeEvent;
-    contextRef.current.beginPath();
-    contextRef.current.moveTo(offsetX, offsetY);
+    setCurrentPath([{ x: offsetX, y: offsetY }]);
     setIsDrawing(true);
-  };
-
-  const finishDrawing = () => {
-    contextRef.current.closePath();
-    setIsDrawing(false);
   };
 
   const draw = ({ nativeEvent }) => {
     if (!isDrawing) return;
     const { offsetX, offsetY } = nativeEvent;
-    contextRef.current.lineTo(offsetX, offsetY);
-    contextRef.current.stroke();
+    setCurrentPath([...currentPath, { x: offsetX, y: offsetY }]);
+  };
+
+  const finishDrawing = () => {
+    setElements([...elements, { tool: currentTool, path: currentPath, color, brushSize, brushStyle }]);
+    //setCurrentPath([]);
+    setIsDrawing(false);
   };
 
   return (<>
@@ -58,10 +92,12 @@ export default function SessionPage() {
           ref={canvasRef}
           style={{ width: "100%", height: "100%" }}
           onMouseDown={startDrawing}
-          onMouseUp={finishDrawing}
           onMouseMove={draw}
+          onMouseUp={finishDrawing}
+          onMouseLeave={finishDrawing}
         />
       </Box>
     </Container>
   </>);
 }
+
