@@ -35,3 +35,7 @@ yarn-error.log*
 
 # repl.it
 .replit
+
+# Added by cargo
+
+/target
