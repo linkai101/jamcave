@@ -7,7 +7,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>Title</title>
+        <title>Jamcave</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       

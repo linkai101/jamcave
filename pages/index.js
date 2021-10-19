@@ -2,33 +2,32 @@ import React from 'react';
 
 import {
   Container,
+  Box,
   Heading,
   Text,
+  Button,
+  useColorModeValue,
 } from '@chakra-ui/react';
 
-import ColorModeToggle from '../components/ColorModeToggle';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
-  return (
-    <Container 
-      maxW="container.md" p={8}
-      align="center"
+  return (<>
+    <Navbar/>
+
+    <Box
+      bg={useColorModeValue('gray.200', 'gray.500')}
     >
-      <Heading as="h1" size="xl" my={2}>Jamcave</Heading>
-      <Heading as="h2" size="md" fontWeight="normal" my={2}>
-        This is an example.
-      </Heading>
+      <Container maxW="container.lg"
+        py={12} px={6}
+      >
+        <Heading>Collaborate. Teach. Jam.</Heading>
+        <Text mt={2} fontSize="xl">
+          Visualize, experiment, and engage in real-time like never before — with drawing, coding, and LaTeX tools right at your fingertips.
+        </Text>
 
-      <Text>This is an example sentence. This is an example sentence. This is an example sentence. This is an example sentence.</Text>
-
-      <Heading as="h3" size="md" mt={6}>This is another example.</Heading>
-
-      <Text color="primary">primary</Text>
-      <Text color="primary2">primary2</Text>
-      <Text color="secondary">secondary</Text>
-      <Text color="secondary2">secondary2</Text>
-
-      <ColorModeToggle/>
-    </Container>
-  );
+        <Button mt={4}>Host a demo session</Button>
+      </Container>
+    </Box>
+  </>);
 }
