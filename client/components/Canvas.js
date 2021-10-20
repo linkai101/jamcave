@@ -8,15 +8,18 @@ import {
   Button,
   Input,
   Divider,
+  useColorMode,
 } from '@chakra-ui/react';
 
-export default function Canvas(rest) {
+export default function Canvas({ elements, setElements, ...rest }) {
+  const { colorMode } = useColorMode();
+
   const canvasRef = React.useRef(null);
   const contextRef = React.useRef(null);
 
   const [isDrawing, setIsDrawing] = React.useState(false);
 
-  const [elements, setElements] = React.useState([]);
+  //const [elements, setElements] = React.useState([]);
   const [currentPath, setCurrentPath] = React.useState([]);
   const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle, eraser
   const [lineWidth, setLineWidth] = React.useState(2);
@@ -34,20 +37,23 @@ export default function Canvas(rest) {
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = 1280;
+    canvas.height = 720;
     canvas.style.width = "100%";
-    canvas.style.height = `${canvas.width/16*9}px`;
+    canvas.style.height = `${canvas.clientWidth/canvas.width*canvas.height}px`;
 
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    //context.scale(1,1);
+    context.scale(canvas.width/canvas.clientWidth, canvas.height/canvas.clientHeight);
     contextRef.current = context;
     
     // draw existing elements
     if (elements.length > 0) {
       elements.forEach(ele => {
-        contextRef.current.strokeStyle = ele.color;
+        contextRef.current.strokeStyle = (ele.color === 'black' && colorMode === 'dark') ? 'white'
+          : (ele.color === 'white' && colorMode === 'light') ? 'black'
+          : ele.color; // optimize color for background if necessary
+        //contextRef.current.strokeStyle = ele.color;
         contextRef.current.lineWidth = ele.lineWidth;
         contextRef.current.lineCap = ele.lineCap;
         switch (ele.tool) {
@@ -69,7 +75,10 @@ export default function Canvas(rest) {
 
     // draw current stroke
     if (currentPath.length > 0) {
-      contextRef.current.strokeStyle = color;
+      contextRef.current.strokeStyle = (color === 'black' && colorMode === 'dark') ? 'white' 
+        : (color === 'white' && colorMode === 'light') ? 'black'
+        : color; // optimize color for background if necessary
+      //contextRef.current.strokeStyle = color;
       contextRef.current.lineWidth = lineWidth;
       contextRef.current.lineCap = lineCap;
 
@@ -118,82 +127,86 @@ export default function Canvas(rest) {
 
   return (
     <Flex>
-      <Box flex={1}
-        overflow="hidden"
-        borderWidth="2px" borderRadius="xl"
-        {...rest}
-      >
-        <canvas
-          ref={canvasRef}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={finishDrawing}
-          //onMouseLeave={finishDrawing}
-        />
+      <Box flex={1}>
+        <Box
+          overflow="hidden"
+          borderWidth="2px" borderRadius="xl"
+          {...rest}
+        >
+          <canvas
+            ref={canvasRef}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={finishDrawing}
+            //onMouseLeave={finishDrawing}
+          />
+        </Box>
       </Box>
 
-      <Stack
-        w="42px" ml={2} p={1}
-        borderWidth="2px" borderRadius="xl"
-      >
-        <Button size="sm" variant="outline"
-          onClick={() => setTool('brush')}
-          colorScheme={tool === 'brush' ? "orange" : "gray"}
+      <Box>
+        <Stack
+          w="42px" ml={2} p={1}
+          borderWidth="2px" borderRadius="xl"
         >
-          🖌️
-        </Button>
-        <Button size="sm" variant="outline"
-          onClick={() => setTool('line')}
-          colorScheme={tool === 'line' ? "orange" : "gray"}
-        >
-          |
-        </Button>
-        <Button size="sm" variant="outline"
-          onClick={() => setTool('rect')}
-          colorScheme={tool === 'rect' ? "orange" : "gray"}
-        >
-          ◻
-        </Button>
-        <Button size="sm" variant="outline"
-          onClick={() => setTool('circle')}
-          colorScheme={tool === 'circle' ? "orange" : "gray"}
-        >
-          ○
-        </Button>
+          <Button size="sm" variant="outline"
+            onClick={() => setTool('brush')}
+            colorScheme={tool === 'brush' ? "orange" : "gray"}
+          >
+            🖌️
+          </Button>
+          <Button size="sm" variant="outline"
+            onClick={() => setTool('line')}
+            colorScheme={tool === 'line' ? "orange" : "gray"}
+          >
+            |
+          </Button>
+          <Button size="sm" variant="outline"
+            onClick={() => setTool('rect')}
+            colorScheme={tool === 'rect' ? "orange" : "gray"}
+          >
+            ◻
+          </Button>
+          <Button size="sm" variant="outline"
+            onClick={() => setTool('circle')}
+            colorScheme={tool === 'circle' ? "orange" : "gray"}
+          >
+            ○
+          </Button>
 
-        <Divider pt={2} mb={2}/>
+          <Divider pt={2} mb={2}/>
 
-        <Input size="xs" value={lineWidth} onChange={e => setLineWidth(parseInt(e.target.value))}/>
-        
-        <Divider pt={2} mb={2}/>
+          <Input size="xs" value={lineWidth} onChange={e => setLineWidth(parseInt(e.target.value))}/>
+          
+          <Divider pt={2} mb={2}/>
 
-        <Button size="sm"
-          onClick={() => setColor('black')}
-          colorScheme={color === 'black' ? "blackAlpha" : "gray"}
-        >
-          ⚫
-        </Button>
-        <Button size="sm"
-          onClick={() => setColor('blue')}
-          colorScheme={color === 'blue' ? "blue" : "gray"}
-        >
-          🔵
-        </Button>
-        <Button size="sm"
-          onClick={() => setColor('purple')}
-          colorScheme={color === 'purple' ? "purple" : "gray"}
-        >
-          🟣
-        </Button>
-        
-        <Divider pt={2} mb={2}/>
+          <Button size="sm"
+            onClick={() => setColor('black')}
+            colorScheme={color === 'black' ? "blackAlpha" : "gray"}
+          >
+            ⚫
+          </Button>
+          <Button size="sm"
+            onClick={() => setColor('blue')}
+            colorScheme={color === 'blue' ? "blue" : "gray"}
+          >
+            🔵
+          </Button>
+          <Button size="sm"
+            onClick={() => setColor('purple')}
+            colorScheme={color === 'purple' ? "purple" : "gray"}
+          >
+            🟣
+          </Button>
+          
+          <Divider pt={2} mb={2}/>
 
-        <Button size="sm" variant="outline"
-          onClick={() => setElements([])}
-        >
-          clear
-        </Button>
-      </Stack>
+          <Button size="sm" variant="outline"
+            onClick={() => setElements([])}
+          >
+            clear
+          </Button>
+        </Stack>
+      </Box>
     </Flex>
   );
 }
