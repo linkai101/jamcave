@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 
-import ColorModeToggle from '../components/ColorModeToggle';
+import ColorModeToggle from './ColorModeToggle';
 
 export default function Navbar({ ...rest }) {
   const [isOpen, setIsOpen] = React.useState(false);
