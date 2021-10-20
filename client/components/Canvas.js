@@ -19,9 +19,8 @@ export default function Canvas({ elements, setElements, ...rest }) {
 
   const [isDrawing, setIsDrawing] = React.useState(false);
 
-  //const [elements, setElements] = React.useState([]);
   const [currentPath, setCurrentPath] = React.useState([]);
-  const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle, eraser
+  const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle, eraser*
   const [lineWidth, setLineWidth] = React.useState(2);
   const [color, setColor] = React.useState('black');
   const [lineCap, setLineCap] = React.useState('round');
@@ -32,7 +31,7 @@ export default function Canvas({ elements, setElements, ...rest }) {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     canvas.style.width = "100%";
-    canvas.style.height = `${canvas.width/16*9}px`;
+    canvas.style.height = `${canvas.clientWidth/canvas.width*canvas.height}px`;
   }, []);
 
   React.useEffect(() => {
@@ -44,7 +43,7 @@ export default function Canvas({ elements, setElements, ...rest }) {
 
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.scale(canvas.width/canvas.clientWidth, canvas.height/canvas.clientHeight);
+    //context.scale(canvas.width/canvas.clientWidth, canvas.height/canvas.clientHeight);
     contextRef.current = context;
     
     // draw existing elements
@@ -105,19 +104,25 @@ export default function Canvas({ elements, setElements, ...rest }) {
     }
   }, [elements, currentPath]);
 
-  const startDrawing = ({ nativeEvent }) => {
+  // translate mouse pos on client to canvas
+  const getCanvasPos = (clientPos) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    return { x: (clientPos.x-rect.left)/canvas.clientWidth * canvas.width, y: (clientPos.y-rect.top)/canvas.clientHeight * canvas.height };
+  }
+
+  // handle drawing events
+  const startDrawing = ({ clientX, clientY }) => {
     if (isDrawing) return;
-    const { offsetX, offsetY } = nativeEvent;
-    setCurrentPath([{ x: offsetX, y: offsetY }]);
+    setCurrentPath([getCanvasPos({ x: clientX, y: clientY })]);
+    console.log({ x: clientX, y: clientY })
+    console.log({ width: canvasRef.current.clientWidth, height: canvasRef.current.clientHeight })
     setIsDrawing(true);
   };
-
-  const draw = ({ nativeEvent }) => {
+  const draw = ({ clientX, clientY }) => {
     if (!isDrawing) return;
-    const { offsetX, offsetY } = nativeEvent;
-    setCurrentPath([...currentPath, { x: offsetX, y: offsetY }]);
+    setCurrentPath([...currentPath, getCanvasPos({ x: clientX, y: clientY })]);
   };
-
   const finishDrawing = () => {
     if (!isDrawing) return;
     setElements([...elements, { tool, path: currentPath, color, lineWidth, lineCap }]);
@@ -210,7 +215,6 @@ export default function Canvas({ elements, setElements, ...rest }) {
     </Flex>
   );
 }
-
 
 function createBrushStroke(ctx, path) {
   if (!path.length > 0) return;
