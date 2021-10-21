@@ -21,7 +21,7 @@ export default function Home() {
       <Container maxW="container.lg"
         py={12} px={6}
       >
-        <Heading>Collaborate. Teach. Jam.</Heading>
+        <Heading>Collaborate. Present. Jam.</Heading>
         <Text mt={2} fontSize="xl">
           Visualize, experiment, and engage in real-time like never before — with drawing, coding, and LaTeX tools right at your fingertips.
         </Text>

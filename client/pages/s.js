@@ -35,51 +35,47 @@ export default function SessionPage() {
                   onClick={() => setCurrentSlide(i)}
                 >
                   <Text position="absolute" top={1} left={2}
-                    fontSize="sm" fontWeight="bold"
+                    fontSize="xs" fontWeight="bold"
                   >
                     {i+1}
                   </Text>
 
                   <Button position="absolute" bottom={1} right={1}
                     size="xs" p={0}
+                    colorScheme="whiteAlpha"
                     onClick={() => {
-                      // TODO
+                      // TODO: add slide deletion (also optimize currentslide for multiplayer)
                     }}
-                  >
-                    🗑️
-                  </Button>
-
-                  {/*<Text fontSize="md" contentEditable={true}
-                    onBlur={e => {
-                      setSlides(slides.map((s1,i1) => {
-                        if (i1 === i) s1.setName(e.target.innerHTML);
-                        return s1;
-                      }))
-                    }} dangerouslySetInnerHTML={{ __html: s.name }}
-                  />*/}
-                  <Input variant={s.name ? "unstyled" : "flushed"}
-                    size="xs" fontSize="md" textAlign="center"
-                    contentEditable={true} mx={4}
-                    value={s.name}
-                    onChange={e => {
-                      setSlides(slides.map((s1,i1) => {
-                        if (i1 === i) s1.setName(e.target.value);
-                        return s1;
-                      }))
-                    }}
-                  />
+                  >🗑️</Button>
+                  
+                  <Box mx={4}>
+                    <Input variant={s.name ? "unstyled" : "flushed"}
+                      size="xs" fontSize="md" textAlign="center"
+                      contentEditable={true}
+                      value={s.name}
+                      onChange={e => {
+                        setSlides(slides.map((s1,i1) => {
+                          if (i1 === i) s1.setName(e.target.value);
+                          return s1;
+                        }))
+                      }}
+                    />
+                  </Box>
 
                 </Flex>
               )}
             </Box>
 
             <Flex h="32px" align="center" justify="center" borderTopWidth="1px">
-              <Button size="xs" onClick={() => setSlides([...slides, new Slide()])}>+</Button>
+              <Button size="xs" fontSize="sm"
+                onClick={() => setSlides([...slides, new Slide()])}
+              >+</Button>
             </Flex>
           </Flex>
           
           <Box flex={1} pl={4} pr={1} overflow="auto">
             <Canvas
+              dimensions={slides[currentSlide].dimensions}
               elements={slides[currentSlide].elements}
               setElements={(newElements) => 
                 setSlides(slides.map((s,i) => {
@@ -96,8 +92,9 @@ export default function SessionPage() {
 }
 
 class Slide {
-  constructor(name, elements) {
-    this.name = name || "Click to add name";
+  constructor(name, dimensions, elements) {
+    this.name = name; //|| "Click to add title";
+    this.dimensions = dimensions || { x: 1280, y: 720 };
     this.elements = elements || [];
   }
 

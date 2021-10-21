@@ -11,8 +11,29 @@ import {
   useColorMode,
 } from '@chakra-ui/react';
 
-export default function Canvas({ elements, setElements, ...rest }) {
+// get window size (for updating canvas size)
+function useWindowSize() {
+  const [windowSize, setWindowSize] = React.useState({
+    width: undefined,
+    height: undefined,
+  });
+  React.useEffect(() => {
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  return windowSize;
+}
+
+export default function Canvas({ dimensions, elements, setElements, ...rest }) {
   const { colorMode } = useColorMode();
+  const windowSize = useWindowSize();
 
   const canvasRef = React.useRef(null);
   const contextRef = React.useRef(null);
@@ -21,7 +42,7 @@ export default function Canvas({ elements, setElements, ...rest }) {
 
   const [currentPath, setCurrentPath] = React.useState([]);
   const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle, eraser*
-  const [lineWidth, setLineWidth] = React.useState(2);
+  const [lineWidth, setLineWidth] = React.useState(3);
   const [color, setColor] = React.useState('black');
   const [lineCap, setLineCap] = React.useState('round');
 
@@ -36,14 +57,14 @@ export default function Canvas({ elements, setElements, ...rest }) {
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = 1280;
-    canvas.height = 720;
+    canvas.width = dimensions.x;
+    canvas.height = dimensions.y;
     canvas.style.width = "100%";
     canvas.style.height = `${canvas.clientWidth/canvas.width*canvas.height}px`;
 
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
-    //context.scale(canvas.width/canvas.clientWidth, canvas.height/canvas.clientHeight);
+    //context.scale(1,1);
     contextRef.current = context;
     
     // draw existing elements
@@ -92,17 +113,17 @@ export default function Canvas({ elements, setElements, ...rest }) {
           createRectStroke(contextRef.current, currentPath);
           break;
         case "circle":
-          // display dot while drawing (disappears on release)
+          /*// display dot while drawing (disappears on release)
           contextRef.current.beginPath();
           contextRef.current.lineTo(currentPath[0].x, currentPath[0].y);
           contextRef.current.stroke();
-          contextRef.current.closePath();
+          contextRef.current.closePath();*/
 
           createCircleStroke(contextRef.current, currentPath);
           break;
       }
     }
-  }, [elements, currentPath]);
+  }, [elements, currentPath, colorMode, windowSize]); // update canvas on new element, color mode change, and window resize
 
   // translate mouse pos on client to canvas
   const getCanvasPos = (clientPos) => {
@@ -115,8 +136,6 @@ export default function Canvas({ elements, setElements, ...rest }) {
   const startDrawing = ({ clientX, clientY }) => {
     if (isDrawing) return;
     setCurrentPath([getCanvasPos({ x: clientX, y: clientY })]);
-    console.log({ x: clientX, y: clientY })
-    console.log({ width: canvasRef.current.clientWidth, height: canvasRef.current.clientHeight })
     setIsDrawing(true);
   };
   const draw = ({ clientX, clientY }) => {
@@ -143,7 +162,7 @@ export default function Canvas({ elements, setElements, ...rest }) {
             onMouseDown={startDrawing}
             onMouseMove={draw}
             onMouseUp={finishDrawing}
-            //onMouseLeave={finishDrawing}
+            //onMouseLeave={finishDrawing} stops stroke when mouse exits canvas (disabled)
           />
         </Box>
       </Box>
@@ -151,7 +170,7 @@ export default function Canvas({ elements, setElements, ...rest }) {
       <Box>
         <Stack
           w="42px" ml={2} p={1}
-          borderWidth="2px" borderRadius="xl"
+          //borderWidth="2px" borderRadius="xl"
         >
           <Button size="sm" variant="outline"
             onClick={() => setTool('brush')}
@@ -197,10 +216,10 @@ export default function Canvas({ elements, setElements, ...rest }) {
             🔵
           </Button>
           <Button size="sm"
-            onClick={() => setColor('purple')}
-            colorScheme={color === 'purple' ? "purple" : "gray"}
+            onClick={() => setColor('green')}
+            colorScheme={color === 'green' ? "green" : "gray"}
           >
-            🟣
+            🟢
           </Button>
           
           <Divider pt={2} mb={2}/>
@@ -210,10 +229,26 @@ export default function Canvas({ elements, setElements, ...rest }) {
           >
             clear
           </Button>
+
+          {/*<Button size="sm" variant="outline"
+            onClick={() => saveImage()}
+          >
+            save
+          </Button>*/}
         </Stack>
       </Box>
     </Flex>
   );
+
+  /*function saveImage() {
+    const image = canvasRef.current.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+    let a = document.createElement('a');
+    a.href = image;
+    a.download = "download.png";
+    document.body.appendChild(a);
+    a.click();
+  }*/
 }
 
 function createBrushStroke(ctx, path) {
