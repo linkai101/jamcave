@@ -12,12 +12,17 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-import SessionNavbar from '../components/SessionNavbar';
-import Canvas from '../components/Canvas';
+import Slide from '../../../lib/Slide';
+import SlidePreview from '../../../lib/SlidePreview';
+
+import SessionNavbar from '../../../components/SessionNavbar';
+import Canvas from '../../../components/Canvas';
 
 export default function SessionPage() {
-  const [slides, setSlides] = React.useState([new Slide()]);
-  const [currentSlide, setCurrentSlide] = React.useState(0);
+  // TODO: update with backend
+  const [slides, setSlides] = React.useState([new SlidePreview()]); // summary of all slides (without stroke data)
+  const [currentSlide, setCurrentSlide] = React.useState(new Slide()); // current slide (with stroke data)
+  const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0); // index of current slide
 
   return (<>
     <Flex direction="column" h="100vh">
@@ -30,9 +35,9 @@ export default function SessionPage() {
               {slides.map((s,i) => 
                 <Flex key={i}
                   h="126px" ml={2} my={1}
-                  borderWidth="2px" borderRadius="lg" borderColor={i===currentSlide ? 'secondary' : 'auto'}
+                  borderWidth="2px" borderRadius="lg" borderColor={i===currentSlideIndex ? 'secondary' : 'auto'}
                   justify="center" align="center" position="relative"
-                  onClick={() => setCurrentSlide(i)}
+                  onClick={() => setCurrentSlideIndex(i)}
                 >
                   <Text position="absolute" top={1} left={2}
                     fontSize="xs" fontWeight="bold"
@@ -44,7 +49,7 @@ export default function SessionPage() {
                     size="xs" p={0}
                     colorScheme="whiteAlpha"
                     onClick={() => {
-                      // TODO: add slide deletion (also optimize currentslide for multiplayer)
+                      // TODO: add slide deletion
                     }}
                   >🗑️</Button>
                   
@@ -53,9 +58,10 @@ export default function SessionPage() {
                       size="xs" fontSize="md" textAlign="center"
                       contentEditable={true}
                       value={s.name}
+                      placeholder="Click to add title"
                       onChange={e => {
                         setSlides(slides.map((s1,i1) => {
-                          if (i1 === i) s1.setName(e.target.value);
+                          if (i1 === i) s1.name = e.target.value;
                           return s1;
                         }))
                       }}
@@ -68,41 +74,21 @@ export default function SessionPage() {
 
             <Flex h="32px" align="center" justify="center" borderTopWidth="1px">
               <Button size="xs" fontSize="sm"
-                onClick={() => setSlides([...slides, new Slide()])}
+                onClick={() => {
+                  // TODO: add new slide
+                }}
               >+</Button>
             </Flex>
           </Flex>
           
           <Box flex={1} pl={4} pr={1} overflow="auto">
             <Canvas
-              dimensions={slides[currentSlide].dimensions}
-              elements={slides[currentSlide].elements}
-              setElements={(newElements) => 
-                setSlides(slides.map((s,i) => {
-                  if (i === currentSlide) s.setElements(newElements);
-                  return s;
-                })
-              )}
+              slide={currentSlide}
+              setSlide={setCurrentSlide}
             />
           </Box>
         </Flex>
       </Container>
     </Flex>
   </>);
-}
-
-class Slide {
-  constructor(name, dimensions, elements) {
-    this.name = name; //|| "Click to add title";
-    this.dimensions = dimensions || { x: 1280, y: 720 };
-    this.elements = elements || [];
-  }
-
-  setName(name) {
-    this.name = name;
-  }
-
-  setElements(elements) {
-    this.elements = elements;
-  }
 }

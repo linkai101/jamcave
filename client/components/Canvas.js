@@ -4,12 +4,14 @@ import React from 'react';
 import {
   Box,
   Flex,
-  Stack,
-  Button,
-  Input,
-  Divider,
   useColorMode,
 } from '@chakra-ui/react';
+
+import Stroke from '../lib/Stroke';
+import createStroke from '../lib/strokes';
+
+import Toolbar from '../components/Toolbar';
+import TextWidgetTest from '../components/TextWidgetTest';
 
 // get window size (for updating canvas size)
 function useWindowSize() {
@@ -31,9 +33,21 @@ function useWindowSize() {
   return windowSize;
 }
 
-export default function Canvas({ dimensions, elements, setElements, ...rest }) {
+/*const saveImage = (canvas) => {
+  const image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+  let a = document.createElement('a');
+  a.href = image;
+  a.download = "download.png";
+  document.body.appendChild(a);
+  a.click();
+}*/
+
+export default function Canvas({ slide, setSlide, ...rest }) {
   const { colorMode } = useColorMode();
   const windowSize = useWindowSize();
+
+  const { dimensions, strokes } = slide;
 
   const canvasRef = React.useRef(null);
   const contextRef = React.useRef(null);
@@ -41,11 +55,22 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
   const [isDrawing, setIsDrawing] = React.useState(false);
 
   const [currentPath, setCurrentPath] = React.useState([]);
-  const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle, eraser*
+  const [tool, setTool] = React.useState('brush'); // brush, line, rect, circle
   const [lineWidth, setLineWidth] = React.useState(3);
   const [color, setColor] = React.useState('black');
   const [lineCap, setLineCap] = React.useState('round');
 
+  function setStrokes(newStrokes) {
+    setSlide(Object.assign({}, slide, { strokes: newStrokes }));
+  }
+
+  // translate mouse pos on client to canvas
+  const getCanvasPos = (clientPos) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    return { x: (clientPos.x-rect.left)/canvas.clientWidth * canvas.width, y: (clientPos.y-rect.top)/canvas.clientHeight * canvas.height };
+  }
+  
   // Set canvas size on load
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -67,9 +92,9 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
     //context.scale(1,1);
     contextRef.current = context;
     
-    // draw existing elements
-    if (elements.length > 0) {
-      elements.forEach(ele => {
+    // draw existing strokes
+    if (strokes.length > 0) {
+      strokes.forEach(ele => {
         contextRef.current.strokeStyle = (ele.color === 'black' && colorMode === 'dark') ? 'white'
           : (ele.color === 'white' && colorMode === 'light') ? 'black'
           : ele.color; // optimize color for background if necessary
@@ -78,16 +103,16 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
         contextRef.current.lineCap = ele.lineCap;
         switch (ele.tool) {
           case "brush":
-            createBrushStroke(contextRef.current, ele.path);
+            createStroke.brush(contextRef.current, ele.path);
             break;
           case "line":
-            createLineStroke(contextRef.current, ele.path);
+            createStroke.line(contextRef.current, ele.path);
             break;
           case "rect":
-            createRectStroke(contextRef.current, ele.path);
+            createStroke.rect(contextRef.current, ele.path);
             break;
           case "circle":
-            createCircleStroke(contextRef.current, ele.path);
+            createStroke.circle(contextRef.current, ele.path);
             break;
         }
       });
@@ -104,33 +129,20 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
 
       switch (tool) {
         case "brush":
-          createBrushStroke(contextRef.current, currentPath);
+          createStroke.brush(contextRef.current, currentPath);
           break;
         case "line":
-          createLineStroke(contextRef.current, currentPath);
+          createStroke.line(contextRef.current, currentPath);
           break;
         case "rect":
-          createRectStroke(contextRef.current, currentPath);
+          createStroke.rect(contextRef.current, currentPath);
           break;
         case "circle":
-          /*// display dot while drawing (disappears on release)
-          contextRef.current.beginPath();
-          contextRef.current.lineTo(currentPath[0].x, currentPath[0].y);
-          contextRef.current.stroke();
-          contextRef.current.closePath();*/
-
-          createCircleStroke(contextRef.current, currentPath);
+          createStroke.circle(contextRef.current, currentPath);
           break;
       }
     }
-  }, [elements, currentPath, colorMode, windowSize]); // update canvas on new element, color mode change, and window resize
-
-  // translate mouse pos on client to canvas
-  const getCanvasPos = (clientPos) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    return { x: (clientPos.x-rect.left)/canvas.clientWidth * canvas.width, y: (clientPos.y-rect.top)/canvas.clientHeight * canvas.height };
-  }
+  }, [strokes, currentPath, colorMode, windowSize]); // update canvas on new stroke, color mode change, and window resize
 
   // handle drawing events
   const startDrawing = ({ clientX, clientY }) => {
@@ -144,7 +156,7 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
   };
   const finishDrawing = () => {
     if (!isDrawing) return;
-    setElements([...elements, { tool, path: currentPath, color, lineWidth, lineCap }]);
+    setStrokes([...strokes, new Stroke(tool, currentPath, color, lineWidth, lineCap)]);
     setCurrentPath([]);
     setIsDrawing(false);
   };
@@ -155,6 +167,7 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
         <Box
           overflow="hidden"
           borderWidth="2px" borderRadius="xl"
+          position="relative"
           {...rest}
         >
           <canvas
@@ -164,128 +177,22 @@ export default function Canvas({ dimensions, elements, setElements, ...rest }) {
             onMouseUp={finishDrawing}
             //onMouseLeave={finishDrawing} stops stroke when mouse exits canvas (disabled)
           />
+
+          {/*<TextWidgetTest
+            canvasRef={canvasRef}
+            // Work in progress
+          />*/}
         </Box>
       </Box>
 
       <Box>
-        <Stack
-          w="42px" ml={2} p={1}
-          //borderWidth="2px" borderRadius="xl"
-        >
-          <Button size="sm" variant="outline"
-            onClick={() => setTool('brush')}
-            colorScheme={tool === 'brush' ? "orange" : "gray"}
-          >
-            🖌️
-          </Button>
-          <Button size="sm" variant="outline"
-            onClick={() => setTool('line')}
-            colorScheme={tool === 'line' ? "orange" : "gray"}
-          >
-            |
-          </Button>
-          <Button size="sm" variant="outline"
-            onClick={() => setTool('rect')}
-            colorScheme={tool === 'rect' ? "orange" : "gray"}
-          >
-            ◻
-          </Button>
-          <Button size="sm" variant="outline"
-            onClick={() => setTool('circle')}
-            colorScheme={tool === 'circle' ? "orange" : "gray"}
-          >
-            ○
-          </Button>
-
-          <Divider pt={2} mb={2}/>
-
-          <Input size="xs" value={lineWidth} onChange={e => setLineWidth(parseInt(e.target.value))}/>
-          
-          <Divider pt={2} mb={2}/>
-
-          <Button size="sm"
-            onClick={() => setColor('black')}
-            colorScheme={color === 'black' ? "blackAlpha" : "gray"}
-          >
-            ⚫
-          </Button>
-          <Button size="sm"
-            onClick={() => setColor('blue')}
-            colorScheme={color === 'blue' ? "blue" : "gray"}
-          >
-            🔵
-          </Button>
-          <Button size="sm"
-            onClick={() => setColor('green')}
-            colorScheme={color === 'green' ? "green" : "gray"}
-          >
-            🟢
-          </Button>
-          
-          <Divider pt={2} mb={2}/>
-
-          <Button size="sm" variant="outline"
-            onClick={() => setElements([])}
-          >
-            clear
-          </Button>
-
-          {/*<Button size="sm" variant="outline"
-            onClick={() => saveImage()}
-          >
-            save
-          </Button>*/}
-        </Stack>
+        <Toolbar
+          tool={tool} setTool={setTool}
+          lineWidth={lineWidth} setLineWidth={setLineWidth}
+          color={color} setColor={setColor}
+          clearCanvas={() => setStrokes([])}
+        />
       </Box>
     </Flex>
   );
-
-  /*function saveImage() {
-    const image = canvasRef.current.toDataURL("image/png").replace("image/png", "image/octet-stream");
-
-    let a = document.createElement('a');
-    a.href = image;
-    a.download = "download.png";
-    document.body.appendChild(a);
-    a.click();
-  }*/
-}
-
-function createBrushStroke(ctx, path) {
-  if (!path.length > 0) return;
-  ctx.beginPath();
-  path.forEach((coord) => {
-    ctx.lineTo(coord.x, coord.y);
-  });
-  ctx.stroke();
-  ctx.closePath();
-}
-
-function createLineStroke(ctx, path) {
-  if (!path.length > 0) return;
-  ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
-  ctx.lineTo(path[path.length-1].x, path[path.length-1].y);
-  ctx.stroke();
-  ctx.closePath();
-}
-
-function createCircleStroke(ctx, path) {
-  function getDistance(p1, p2) {
-    return Math.sqrt(Math.abs(p2.x-p1.x)**2 + Math.abs(p2.y-p1.y)**2);
-  }
-
-  if (!path.length > 0) return;
-  ctx.beginPath();
-  ctx.arc(path[0].x, path[0].y, getDistance(path[0], path[path.length-1]), 0, 2*Math.PI);
-  ctx.stroke();
-  ctx.closePath();
-}
-
-function createRectStroke(ctx, path) {
-  if (!path.length > 0) return;
-  ctx.beginPath();
-  ctx.rect(path[0].x, path[0].y, path[path.length-1].x - path[0].x, path[path.length-1].y - path[0].y);
-  ctx.stroke();
-  ctx.closePath();
 }
