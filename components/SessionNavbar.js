@@ -16,7 +16,7 @@ import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 
 import ColorModeToggle from './ColorModeToggle';
 
-export default function Navbar({ ...rest }) {
+export default function SessionNavbar({ connRef, isHost, peerId, toast, ...rest }) {
   return (
     <Box
       bg={useColorModeValue('bg.light','bg.dark')} color={useColorModeValue('primary','primary2')}
@@ -26,7 +26,7 @@ export default function Navbar({ ...rest }) {
       <Container maxW="container.xl" px={8} py={2}>
         <Flex as="nav" direction="row" align="center" justify="space-between" wrap="wrap">
           <Logo mr={2}/>
-          <Links flex={1}/>
+          <Links flex={1} connRef={connRef} isHost={isHost} peerId={peerId} toast={toast}/>
         </Flex>
       </Container>
     </Box>
@@ -43,7 +43,7 @@ function Logo({ ...rest }) {
   );
 }
 
-function Links({ ...rest }) {
+function Links({ connRef, isHost, peerId, toast, ...rest }) {
   return (
     <Box {...rest} pl={4}>
       <Stack
@@ -53,8 +53,29 @@ function Links({ ...rest }) {
         spacing={3}
       >
         <ColorModeToggle size="sm" color="text.onPrimary" colorScheme="blackAlpha"/>
-        <Button size="sm" color="text.onPrimary" colorScheme="blackAlpha">
-          Leave session
+        {isHost && peerId &&
+          <Button size="sm" color="text.onPrimary" colorScheme="blackAlpha"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/s/${peerId}`);
+
+              toast({
+                title: "Invite link copied to clipboard!",
+                status: "info",
+                variant: "subtle",
+                duration: 3000,
+              });
+            }}
+          >
+            Copy Invite
+          </Button>
+        }
+        <Button size="sm" color="text.onPrimary" colorScheme="blackAlpha"
+          onClick={() => {
+            connRef?.close();
+            window.location.href = '/';
+          }}
+        >
+          {isHost ? "End session" : connRef ? "Leave session" : "Go home"}
         </Button>
       </Stack>
     </Box>

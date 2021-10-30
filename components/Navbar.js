@@ -78,9 +78,6 @@ function Links({ ...rest }) {
           <Button size="sm" color="text.onPrimary" colorScheme="blackAlpha">
             Join a session
           </Button>
-          <Button size="sm" color="text.onPrimary" colorScheme="blackAlpha">
-            Login
-          </Button>
         </Stack>
       </Flex>
     </Box>
