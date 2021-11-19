@@ -57,13 +57,13 @@ export default function Toolbar({
       </Button>
       <Button size="sm"
         onClick={() => setColor('#6082B6')}
-        colorScheme={color === 'blue' ? "blue" : "gray"}
+        colorScheme={color === '#6082B6' ? "blue" : "gray"}
       >
         🔵
       </Button>
       <Button size="sm"
         onClick={() => setColor('#50C878')}
-        colorScheme={color === 'green' ? "green" : "gray"}
+        colorScheme={color === '#50C878' ? "green" : "gray"}
       >
         🟢
       </Button>

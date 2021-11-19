@@ -10,70 +10,31 @@ import {
   Button,
   Input,
   Link,
+  Image,
   useColorModeValue,
 } from '@chakra-ui/react';
 
 import Navbar from '../components/Navbar';
 
 export default function Home() {
-  const [inviteValue, setInviteValue] = React.useState();
 
   return (<>
-    <Navbar/>
+    <Flex minH="100vh" align="center" justify="center" bg={useColorModeValue("primary", "primary2")}>
+      <Box align="center">
+        <Image h={12} src="/assets/default-monochrome-white.svg"/>
+        <Text fontSize="lg" mt={2}>A collaborative &amp; interactive whiteboard.</Text>
+        <NextLink href="/s/host/" passHref>
+          <Link style={{ textDecoration: "none" }}>
+            <Button mt={4} colorScheme="orange">Host a session</Button>
+          </Link>
+        </NextLink>
+      </Box>
+    </Flex>
 
-    <Box
-      bg={useColorModeValue('gray.200', 'gray.500')}
-    >
-      <Container maxW="container.lg"
-        py={20} px={6}
-      >
-        <Heading>Collaborate. Present. Jam.</Heading>
-        <Text mt={2} fontSize="xl">
-          Visualize, experiment, and engage in real-time like never before — with drawing, coding, and LaTeX tools right at your fingertips.
-        </Text>
-
-        <Button mt={4}>Host a session</Button>
-      </Container>
-    </Box>
-
-    <Box
-      bg={useColorModeValue('secondary', 'secondary2')} color="text.onSecondary"
-    >
-      <Container maxW="container.lg"
-        py={12} px={6}
-      >
-        <Flex direction={{ base: "column", sm: "row" }}>
-          <Box flex={1} p={3}>
-            <Heading size="md">Have an invite link?</Heading>
-            <Flex>
-              <Input mt={3} w="200px"
-                variant="filled" size="sm" borderRadius="md"
-                placeholder="Paste your invite link here"
-                value={inviteValue}
-                onChange={e => setInviteValue(e.target.value)}
-              />
-
-              {inviteValue && 
-                <NextLink href={inviteValue} passHref>
-                <Link style={{ textDecoration: "none" }}>
-                    <Button mt={3} size="sm" ml={2} colorScheme="orange">Join</Button>
-                  </Link>
-                </NextLink>
-              }
-            </Flex>
-          </Box>
-
-          <Box flex={1} p={3}>
-            <Heading size="md">Looking to host a jam session?</Heading>
-            
-            <NextLink href="/s/host" passHref>
-              <Link style={{ textDecoration: "none" }}>
-                <Button mt={3} size="sm" colorScheme="orange">Host a session</Button>
-              </Link>
-            </NextLink>
-          </Box>
-        </Flex>
-      </Container>
+    <Box w="100%" px={2} position="absolute" bottom="0" textAlign="right">
+      <Link href="https://linkaiwu.com" isExternal>
+        (c) Linkai Wu
+      </Link>
     </Box>
   </>);
 }
