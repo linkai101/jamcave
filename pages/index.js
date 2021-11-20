@@ -22,7 +22,9 @@ export default function Home() {
     <Flex minH="100vh" align="center" justify="center" bg={useColorModeValue("primary", "primary2")}>
       <Box align="center">
         <Image h={12} src="/assets/default-monochrome-white.svg"/>
-        <Text fontSize="lg" mt={2}>A collaborative &amp; interactive whiteboard.</Text>
+        <Text fontSize="xl" color="text.onPrimary" mt={2}>
+          A collaborative &amp; interactive whiteboard.
+        </Text>
         <NextLink href="/s/host/" passHref>
           <Link style={{ textDecoration: "none" }}>
             <Button mt={4} colorScheme="orange">Host a session</Button>
