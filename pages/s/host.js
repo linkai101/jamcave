@@ -228,6 +228,7 @@ export default function SessionHostPage() {
                   <Button position="absolute" bottom={1} right={1}
                     size="xs" p={0}
                     colorScheme="whiteAlpha"
+                    color={useColorModeValue("text.onLight", "text.onDark")}
                     onClick={() => {
                       if (slides.length === 1) {
                         let newFirstSlide = new Slide();

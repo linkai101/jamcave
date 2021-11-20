@@ -214,6 +214,7 @@ export default function SessionPage() {
                   <Button position="absolute" bottom={1} right={1}
                     size="xs" p={0}
                     colorScheme="whiteAlpha"
+                    color={useColorModeValue("text.onLight", "text.onDark")}
                     onClick={() => {
                       const deleteSlideRequest = new ClientDataTransfer('deleteSlide', { slideIndex:i });
                       connRef.send(serialize(deleteSlideRequest));
